@@ -4,12 +4,16 @@
 # Run lint-staged for JavaScript/TypeScript projects
 npx lint-staged
 
-# Run Flutter analyze for mobile project
-echo "🔍 Analyzing Flutter code..."
-cd mobile && flutter analyze
-if [ $? -ne 0 ]; then
-  echo "❌ Flutter analysis failed. Please fix the issues before committing."
-  exit 1
+# Run Flutter analyze for mobile project (only if Flutter is installed)
+if command -v flutter >/dev/null 2>&1; then
+  echo "🔍 Analyzing Flutter code..."
+  cd mobile && flutter analyze
+  if [ $? -ne 0 ]; then
+    echo "❌ Flutter analysis failed. Please fix the issues before committing."
+    exit 1
+  fi
+else
+  echo "⚠️  Flutter not found in PATH, skipping Flutter analysis"
 fi
 
 echo "✅ Pre-commit checks passed!"
