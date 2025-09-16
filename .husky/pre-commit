@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run lint-staged for JavaScript/TypeScript projects
+npx lint-staged
+
+# Run Flutter analyze for mobile project
+echo "🔍 Analyzing Flutter code..."
+cd mobile && flutter analyze
+if [ $? -ne 0 ]; then
+  echo "❌ Flutter analysis failed. Please fix the issues before committing."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"

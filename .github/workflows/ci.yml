@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-mobile:
+    name: Test Flutter Mobile App
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.10.0'
+        channel: 'stable'
+    
+    - name: Install Flutter dependencies
+      working-directory: ./mobile
+      run: flutter pub get
+    
+    - name: Analyze Flutter code
+      working-directory: ./mobile
+      run: flutter analyze
+    
+    - name: Run Flutter tests
+      working-directory: ./mobile
+      run: flutter test
+    
+    - name: Build Flutter APK
+      working-directory: ./mobile
+      run: flutter build apk --debug
+
+  test-backend:
+    name: Test Node.js Backend
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './backend/package-lock.json'
+    
+    - name: Install Backend dependencies
+      working-directory: ./backend
+      run: npm ci
+    
+    - name: Lint Backend code
+      working-directory: ./backend
+      run: npm run lint
+    
+    - name: Run Backend tests
+      working-directory: ./backend
+      run: npm test
+    
+    - name: Build Backend
+      working-directory: ./backend
+      run: npm run build
+
+  test-admin:
+    name: Test React Admin Dashboard
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './admin/package-lock.json'
+    
+    - name: Install Admin dependencies
+      working-directory: ./admin
+      run: npm ci
+    
+    - name: Lint Admin code
+      working-directory: ./admin
+      run: npm run lint
+    
+    - name: Run Admin tests
+      working-directory: ./admin
+      run: npm test
+    
+    - name: Build Admin
+      working-directory: ./admin
+      run: npm run build
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  deploy:
+    name: Deploy
+    needs: [test-mobile, test-backend, test-admin]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+    
+    - name: Deploy Backend to Firebase
+      working-directory: ./backend
+      run: |
+        npm ci
+        npm run build
+        # npm run deploy  # Uncomment when Firebase is configured
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+    
+    - name: Deploy Admin to Firebase Hosting
+      working-directory: ./admin
+      run: |
+        npm ci
+        npm run build
+        # npm run deploy  # Uncomment when Firebase hosting is configured
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

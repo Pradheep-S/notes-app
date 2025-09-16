@@ -1,0 +1,66 @@
+{
+  "name": "notes-app",
+  "version": "1.0.0",
+  "description": "Notes application mono-repo with Flutter, Node.js, and React",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "admin"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd mobile && flutter pub get && cd ../backend && npm install && cd ../admin && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:admin\"",
+    "dev:mobile": "cd mobile && flutter run",
+    "dev:backend": "cd backend && npm run serve",
+    "dev:admin": "cd admin && npm run dev",
+    "build": "npm run build:backend && npm run build:admin && npm run build:mobile",
+    "build:mobile": "cd mobile && flutter build apk",
+    "build:backend": "cd backend && npm run build",
+    "build:admin": "cd admin && npm run build",
+    "test": "npm run test:backend && npm run test:admin && npm run test:mobile",
+    "test:mobile": "cd mobile && flutter test",
+    "test:backend": "cd backend && npm test",
+    "test:admin": "cd admin && npm test",
+    "lint": "npm run lint:backend && npm run lint:admin",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:admin": "cd admin && npm run lint",
+    "lint:fix": "npm run lint:fix:backend && npm run lint:fix:admin",
+    "lint:fix:backend": "cd backend && npm run lint:fix",
+    "lint:fix:admin": "cd admin && npm run lint:fix",
+    "clean": "npm run clean:backend && npm run clean:admin && npm run clean:mobile",
+    "clean:mobile": "cd mobile && flutter clean",
+    "clean:backend": "cd backend && rm -rf lib node_modules",
+    "clean:admin": "cd admin && rm -rf dist node_modules",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1"
+  },
+  "lint-staged": {
+    "backend/**/*.{js,ts}": [
+      "cd backend && npm run lint:fix"
+    ],
+    "admin/**/*.{js,ts,jsx,tsx}": [
+      "cd admin && npm run lint:fix"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/notes-app.git"
+  },
+  "keywords": [
+    "notes",
+    "flutter",
+    "react",
+    "nodejs",
+    "firebase",
+    "mono-repo"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

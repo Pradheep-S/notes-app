@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🚀 Running pre-push checks..."
+
+# Run tests for all projects
+echo "🧪 Running tests..."
+
+# Backend tests
+echo "Testing backend..."
+cd backend && npm test
+if [ $? -ne 0 ]; then
+  echo "❌ Backend tests failed!"
+  exit 1
+fi
+
+# Admin tests
+echo "Testing admin dashboard..."
+cd ../admin && npm test -- --run
+if [ $? -ne 0 ]; then
+  echo "❌ Admin tests failed!"
+  exit 1
+fi
+
+# Mobile tests
+echo "Testing mobile app..."
+cd ../mobile && flutter test
+if [ $? -ne 0 ]; then
+  echo "❌ Mobile tests failed!"
+  exit 1
+fi
+
+echo "✅ All pre-push checks passed!"
