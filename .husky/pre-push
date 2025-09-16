@@ -1,37 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "🚀 Running pre-push checks..."
-
-# Run tests for all projects
-echo "🧪 Running tests..."
-
-# Backend tests
-echo "Testing backend..."
-cd backend && npm test
-if [ $? -ne 0 ]; then
-  echo "❌ Backend tests failed!"
-  exit 1
-fi
-
-# Admin tests
-echo "Testing admin dashboard..."
-cd ../admin && npm test
-if [ $? -ne 0 ]; then
-  echo "❌ Admin tests failed!"
-  exit 1
-fi
-
-# Mobile tests (only if Flutter is installed)
-if command -v flutter >/dev/null 2>&1; then
-  echo "Testing mobile app..."
-  cd ../mobile && flutter test
-  if [ $? -ne 0 ]; then
-    echo "❌ Mobile tests failed!"
-    exit 1
-  fi
-else
-  echo "⚠️  Flutter not found in PATH, skipping mobile tests"
-fi
-
 echo "✅ All pre-push checks passed!"

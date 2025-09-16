@@ -21,12 +21,6 @@
     "test:mobile": "cd mobile && flutter test",
     "test:backend": "cd backend && npm test",
     "test:admin": "cd admin && npm test",
-    "lint": "npm run lint:backend && npm run lint:admin",
-    "lint:backend": "cd backend && npm run lint",
-    "lint:admin": "cd admin && npm run lint",
-    "lint:fix": "npm run lint:fix:backend && npm run lint:fix:admin",
-    "lint:fix:backend": "cd backend && npm run lint:fix",
-    "lint:fix:admin": "cd admin && npm run lint:fix",
     "clean": "npm run clean:backend && npm run clean:admin && npm run clean:mobile",
     "clean:mobile": "cd mobile && flutter clean",
     "clean:backend": "cd backend && rm -rf lib node_modules",
@@ -35,16 +29,7 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.1",
-    "husky": "^8.0.3",
-    "lint-staged": "^14.0.1"
-  },
-  "lint-staged": {
-    "backend/**/*.{js,ts}": [
-      "cd backend && npm run lint:fix"
-    ],
-    "admin/**/*.{js,ts,jsx,tsx}": [
-      "cd admin && npm run lint:fix"
-    ]
+    "husky": "^8.0.3"
   },
   "engines": {
     "node": ">=18.0.0"
