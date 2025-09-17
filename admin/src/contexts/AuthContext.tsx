@@ -7,6 +7,7 @@ import {
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { User, AuthContextType } from '../types/auth';
+import { withRetry } from '../utils/network';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -36,9 +37,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Get the user's ID token to access custom claims
           const idTokenResult = await firebaseUser.getIdTokenResult();
           
-          // Get additional user data from Firestore if needed
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          const userData = userDoc.exists() ? userDoc.data() : {};
+          // Try to get additional user data from Firestore with retry logic
+          let userData: any = {};
+          try {
+            userData = await withRetry(async () => {
+              const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+              return userDoc.exists() ? userDoc.data() : {};
+            });
+          } catch (firestoreError) {
+            console.warn('Firestore access failed after retries, continuing without user data:', firestoreError);
+            // Continue without Firestore data
+          }
 
           const user: User = {
             uid: firebaseUser.uid,
@@ -58,30 +67,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             },
           };
 
-          // TEMPORARILY DISABLED: Admin check for initial setup
-          // TODO: Re-enable this after setting up the first admin user
-          /*
+          // Check if user has admin privileges
           if (!idTokenResult.claims.admin) {
             setError('Access denied. Admin privileges required.');
             await firebaseSignOut(auth);
             setUser(null);
           } else {
-          */
             setUser(user);
             setError(null);
-          /*
-          }
-          */
-          
-          // Show admin status
-          if (idTokenResult.claims.admin) {
             console.log('✅ User has admin privileges');
-          } else {
-            console.log('⚠️ User does NOT have admin privileges yet');
-            console.log('User UID:', firebaseUser.uid);
-            console.log('User Email:', firebaseUser.email);
-            console.log('Please set custom claims in Firebase Console:');
-            console.log('{"admin": true, "role": "admin"}');
           }
         } else {
           setUser(null);

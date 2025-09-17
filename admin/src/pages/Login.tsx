@@ -15,8 +15,15 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, error } = useAuth();
+  const { signIn, error, user, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect to dashboard if user is already authenticated
+  React.useEffect(() => {
+    if (user && !loading) {
+      navigate('/dashboard');
+    }
+  }, [user, loading, navigate]);
 
   const {
     register,
@@ -29,7 +36,7 @@ const Login: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await signIn(data.email, data.password);
-      navigate('/');
+      // Navigation will be handled by the useEffect when auth state changes
     } catch (err) {
       // Error is handled by the AuthContext
     }

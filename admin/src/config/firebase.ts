@@ -23,4 +23,16 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const functions = getFunctions(app);
 
+// Add error handling for network issues
+if (typeof window !== 'undefined') {
+  // Handle network connectivity issues
+  window.addEventListener('online', () => {
+    console.log('Network connection restored');
+  });
+  
+  window.addEventListener('offline', () => {
+    console.log('Network connection lost');
+  });
+}
+
 export default app;
