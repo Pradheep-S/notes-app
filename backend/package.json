@@ -16,16 +16,20 @@
     "test:coverage": "jest --coverage"
   },
   "engines": {
-    "node": "18 || 20"
+    "node": "20"
   },
   "dependencies": {
+    "@google-cloud/vision": "^5.3.3",
     "axios": "^1.5.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "firebase-admin": "^11.10.1",
     "firebase-functions": "^4.4.1",
     "googleapis": "^126.0.1",
-    "pdf-lib": "^1.17.1"
+    "pdf-lib": "^1.17.1",
+    "pdf2pic": "^3.2.0",
+    "sharp": "^0.34.3",
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.14",

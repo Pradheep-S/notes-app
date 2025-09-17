@@ -1,65 +1,72 @@
-import { Routes, Route } from 'react-router-dom'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-function App() {
-  return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold text-foreground">
-            Notes App Admin
-          </h1>
-        </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-8">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/notes" element={<NotesPage />} />
-          <Route path="/users" element={<UsersPage />} />
-        </Routes>
-      </main>
-    </div>
-  )
-}
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import ContentList from './pages/ContentList';
+import ContentEditor from './pages/ContentEditor';
+import AIContentApproval from './pages/AIContentApproval';
 
-function Dashboard() {
-  return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Dashboard</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 border rounded-lg">
-          <h3 className="font-medium">Total Notes</h3>
-          <p className="text-2xl font-bold mt-2">1,234</p>
-        </div>
-        <div className="p-6 border rounded-lg">
-          <h3 className="font-medium">Active Users</h3>
-          <p className="text-2xl font-bold mt-2">567</p>
-        </div>
-        <div className="p-6 border rounded-lg">
-          <h3 className="font-medium">PDF Uploads</h3>
-          <p className="text-2xl font-bold mt-2">89</p>
-        </div>
-      </div>
-    </div>
-  )
-}
+const queryClient = new QueryClient();
 
-function NotesPage() {
-  return (
-    <div>
-      <h2 className="text-xl font-semibold mb-6">Notes Management</h2>
-      <p className="text-muted-foreground">Notes management features coming soon...</p>
-    </div>
-  )
-}
-
+// Simple UsersPage component - can be moved to separate file later
 function UsersPage() {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-6">User Management</h2>
-      <p className="text-muted-foreground">User management features coming soon...</p>
+      <p className="text-gray-600">User management features coming soon...</p>
     </div>
-  )
+  );
 }
 
-export default App
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <Layout>
+                      <Routes>
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/content" element={<ContentList />} />
+                        <Route path="/content/:id" element={<ContentEditor />} />
+                        <Route path="/ai-content" element={<AIContentApproval />} />
+                        <Route path="/users" element={<UsersPage />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                      </Routes>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;

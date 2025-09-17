@@ -23,6 +23,25 @@ service cloud.firestore {
         request.auth.uid == request.resource.data.userId;
     }
     
+    // Content collection for admin-managed content
+    match /content/{contentId} {
+      // Public read access for published content
+      allow read: if resource.data.status == 'published';
+      // Premium content requires authentication and premium access
+      allow read: if resource.data.status == 'published' && 
+        resource.data.isPremium == true && 
+        request.auth != null && 
+        (request.auth.token.premium == true || request.auth.token.admin == true);
+      // Admin full access
+      allow read, write: if request.auth != null && 
+        request.auth.token.admin == true;
+      allow create: if request.auth != null && 
+        request.auth.token.admin == true &&
+        request.resource.data.keys().hasAll(['title', 'description', 'subject', 'semester', 'tags', 'fileUrls', 'isPremium', 'status', 'createdBy', 'createdAt']) &&
+        request.resource.data.status in ['draft', 'published'] &&
+        request.resource.data.createdBy == request.auth.uid;
+    }
+    
     // Admin users can access admin data
     match /admin/{document=**} {
       allow read, write: if request.auth != null && 

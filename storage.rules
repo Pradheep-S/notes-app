@@ -15,6 +15,26 @@ service firebase.storage {
         request.resource.contentType.matches('application/pdf');
     }
     
+    // Content files for admin uploads (PDFs, videos, images)
+    match /content/{contentId}/{allPaths=**} {
+      allow read: if true; // Public read for published content
+      allow write: if request.auth != null && 
+        request.auth.token.admin == true &&
+        (request.resource.contentType.matches('application/pdf') ||
+         request.resource.contentType.matches('video/.*') ||
+         request.resource.contentType.matches('image/.*')) &&
+        request.resource.size < 200 * 1024 * 1024; // 200MB limit for content
+    }
+    
+    // Thumbnails for content previews
+    match /thumbnails/{contentId}/{allPaths=**} {
+      allow read: if true; // Public read for thumbnails
+      allow write: if request.auth != null && 
+        request.auth.token.admin == true &&
+        request.resource.contentType.matches('image/.*') &&
+        request.resource.size < 10 * 1024 * 1024; // 10MB limit for thumbnails
+    }
+    
     // Profile images
     match /avatars/{userId} {
       allow read: if true; // Public read for avatars
